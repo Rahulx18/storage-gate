@@ -1,5 +1,5 @@
 local-llm:
-  base-url: https://generativelanguage.googleapis.com/v1beta/openai
-  model: gemini-1.5-flash
-  api-key: ${GEMINI_API_KEY}
+  base-url: https://api.groq.com/openai/v1
+  model: openai/gpt-oss-120b
+  api-key: ${AI_API_KEY}
 

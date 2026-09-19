@@ -22,11 +22,12 @@ public class LocalLlmService {
 
     public LocalLlmService(
             @Value("${local-llm.base-url}") String baseUrl,
-            @Value("${local-llm.model}") String modelName) {
+            @Value("${local-llm.model}") String modelName,
+            @Value("${local-llm.api-key}") String apiKey) {
 
         HttpClient httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1) // force 1.1 for lm studio handshake hang
-                .connectTimeout(Duration.ofSeconds(5))
+                .connectTimeout(Duration.ofSeconds(25))
                 .build();
 
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
@@ -35,6 +36,7 @@ public class LocalLlmService {
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
+                .defaultHeader("Authorization", "Bearer " + apiKey)
                 .requestInterceptor((request, body, execution) -> {
                     System.out.println("Calling: " + request.getMethod() + " " + request.getURI());
                     return execution.execute(request, body);
