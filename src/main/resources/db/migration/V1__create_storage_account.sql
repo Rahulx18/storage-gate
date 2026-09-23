@@ -10,5 +10,5 @@ CREATE TABLE storage_account (
     last_synced_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
-    CONSTRAINT uq_storage_account_provider_email UNIQUE (provider, email)
+    CONSTRAINT uq_storage_account_destination_email UNIQUE (destination, email)
 );

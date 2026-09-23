@@ -11,9 +11,9 @@ import java.util.UUID;
 
 public interface StorageAccountRepository extends JpaRepository<StorageAccount, UUID> {
 
-    Optional<StorageAccount> findByProviderAndEmail( StorageDestination destination, String email);
+    Optional<StorageAccount> findByDestinationAndEmail(StorageDestination destination, String email);
 
-    boolean existsByProviderAndEmail(StorageDestination destination, String email);
+    boolean existsByDestinationAndEmail(StorageDestination destination, String email);
 
     List<StorageAccount> findAllByStatus(StorageAccountStatus status);
 }
