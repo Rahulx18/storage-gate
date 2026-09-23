@@ -3,6 +3,7 @@ package com.personal.storagegate.service;
 import com.personal.storagegate.dto.llm.ChatCompletionRequest;
 import com.personal.storagegate.dto.llm.ChatCompletionResponse;
 import com.personal.storagegate.dto.llm.ModelListResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -14,6 +15,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 public class LocalLlmService {
 
@@ -38,7 +40,7 @@ public class LocalLlmService {
                 .requestFactory(requestFactory)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .requestInterceptor((request, body, execution) -> {
-                    System.out.println("Calling: " + request.getMethod() + " " + request.getURI());
+                    log.info("Calling: {} {}", request.getMethod(), request.getURI());
                     return execution.execute(request, body);
                 })
                 .build();
@@ -58,24 +60,26 @@ public class LocalLlmService {
         if (response != null && !response.choices().isEmpty()) {
             return response.choices().getFirst().message().content();
         }
+        log.warn("LLM returned no choices for model {}", modelName);
         return "";
     }
 
     public List<String> getAvailableModelIds() {
-        System.out.println("Getting available model IDs...");
+        log.info("Getting available model IDs...");
         ModelListResponse response = restClient.get()
                 .uri("/models")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(ModelListResponse.class);
 
-        System.out.println("Response: " + response);
+        log.info("Response: {}", response);
 
         if (response != null && response.data() != null) {
             return response.data().stream()
                     .map(ModelListResponse.ModelData::id)
                     .toList();
         }
+        log.warn("Model list response was empty or missing data");
         return Collections.emptyList();
     }
 }
