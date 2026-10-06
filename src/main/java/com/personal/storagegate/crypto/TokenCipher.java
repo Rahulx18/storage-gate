@@ -29,11 +29,10 @@ public class TokenCipher {
         try {
             raw = Base64.getDecoder().decode(base64Key.trim());
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("storage.crypto.key is not valid base64", e);
+            throw new IllegalStateException("invalid base64", e);
         }
         if (raw.length != KEY_BYTES) {
-            throw new IllegalStateException(
-                    "storage.crypto.key must decode to " + KEY_BYTES + " bytes but was " + raw.length);
+            throw new IllegalStateException("key must be " + KEY_BYTES + " bytes, got " + raw.length);
         }
         this.key = new SecretKeySpec(raw, "AES");
     }
@@ -66,7 +65,7 @@ public class TokenCipher {
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(TAG_LENGTH_BIT, iv));
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
         } catch (GeneralSecurityException | RuntimeException e) {
-            throw new IllegalStateException("Decryption failed (wrong key or corrupted value)", e);
+            throw new IllegalStateException("decrypt failed, bad key or corrupted value", e);
         }
     }
 }

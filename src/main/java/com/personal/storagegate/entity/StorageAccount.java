@@ -23,7 +23,7 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "storage_account",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"provider", "email"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"destination", "email"}))
 @Getter
 @Setter
 @NoArgsConstructor
