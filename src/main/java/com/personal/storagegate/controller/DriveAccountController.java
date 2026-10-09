@@ -43,8 +43,14 @@ public class DriveAccountController {
     }
 
     @GetMapping("/drive-accounts/callback")
-    public StorageAccount callback(@RequestParam String code) {
+    public StorageAccount callback(@RequestParam String code, @RequestParam String state) {
+        if (!oAuthClient.consumeState(state)) {
+            throw new IllegalArgumentException("invalid or expired state, restart from /drive-accounts/authorize");
+        }
         GoogleTokenResponse tokens = oAuthClient.exchangeCode(code);
+        if (tokens.scope() == null || !tokens.scope().contains(GoogleOAuthClient.DRIVE_SCOPE)) {
+            throw new IllegalStateException("drive.file scope was not granted");
+        }
         if (tokens.refresh_token() == null) {
             throw new IllegalStateException(
                     "no refresh_token, revoke access at https://myaccount.google.com/permissions and try again");

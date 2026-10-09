@@ -10,11 +10,22 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Slf4j
 @Service
 public class GoogleOAuthClient {
 
-    private static final String SCOPES = "openid email https://www.googleapis.com/auth/drive.file";
+    public static final String DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+    private static final String SCOPES = "openid email " + DRIVE_SCOPE;
+    private static final long STATE_TTL_SECONDS = 600;
+
+    private final Map<String, Instant> states = new ConcurrentHashMap<>();
+    private final SecureRandom random = new SecureRandom();
 
     private final RestClient restClient = RestClient.create();
 
@@ -28,6 +39,11 @@ public class GoogleOAuthClient {
     private String redirectUri;
 
     public String buildAuthorizationUrl() {
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
+        String state = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        states.put(state, Instant.now().plusSeconds(STATE_TTL_SECONDS));
+
         return UriComponentsBuilder.fromUriString("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", clientId)
                 .queryParam("redirect_uri", redirectUri)
@@ -35,8 +51,14 @@ public class GoogleOAuthClient {
                 .queryParam("scope", SCOPES)
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")
+                .queryParam("state", state)
                 .build()
                 .toUriString();
+    }
+
+    public boolean consumeState(String state) {
+        states.values().removeIf(exp -> exp.isBefore(Instant.now()));
+        return state != null && states.remove(state) != null;
     }
 
     public GoogleTokenResponse exchangeCode(String code) {

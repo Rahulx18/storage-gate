@@ -1,5 +1,6 @@
 package com.personal.storagegate.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.personal.storagegate.crypto.EncryptedStringConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -43,6 +44,7 @@ public class StorageAccount {
     @Column(length = 255)
     private String displayName;
 
+    @JsonIgnore
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "refresh_token_encrypted", nullable = false, columnDefinition = "text")
     private String refreshToken;
