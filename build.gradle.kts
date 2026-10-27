@@ -45,13 +45,3 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
-
-sonarqube {
-    properties {
-        property("sonar.projectKey", "webhook-retry-engine")
-        property("sonar.projectName", "Webhook Retry Engine")
-        property("sonar.sources", "src/main/java")
-        property("sonar.language", "java")
-        property("sonar.sourceEncoding", "UTF-8")
-    }
-}
