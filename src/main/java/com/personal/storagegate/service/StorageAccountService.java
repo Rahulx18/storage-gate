@@ -1,6 +1,7 @@
 package com.personal.storagegate.service;
 
 import com.personal.storagegate.entity.StorageAccount;
+import com.personal.storagegate.entity.StorageAccountStatus;
 import com.personal.storagegate.entity.StorageDestination;
 import com.personal.storagegate.repository.StorageAccountRepository;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,10 @@ public class StorageAccountService {
                 .findByDestinationAndEmail(StorageDestination.GOOGLE_DRIVE, email)
                 .orElseGet(StorageAccount::new);
 
+        String displayName = email.split("@")[0];
         account.setDestination(StorageDestination.GOOGLE_DRIVE);
         account.setEmail(email);
+        account.setDisplayName(displayName);
         account.setRefreshToken(refreshToken);
         return repository.save(account);
     }

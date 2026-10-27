@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -38,8 +37,8 @@ public class DriveAccountController {
     }
 
     @GetMapping("/drive-accounts/authorize")
-    public RedirectView authorize() {
-        return new RedirectView(oAuthClient.buildAuthorizationUrl());
+    public Map<String, String> authorize() {
+        return Map.of("url", oAuthClient.buildAuthorizationUrl());
     }
 
     @GetMapping("/drive-accounts/callback")

@@ -22,7 +22,7 @@ public class JwtService {
     private final long ttlSeconds;
 
     public JwtService(@Value("${jwt.secret}") String base64Secret,
-                      @Value("${jwt.ttl-seconds:900}") long ttlSeconds) {
+                      @Value("${jwt.ttl-seconds:9000}") long ttlSeconds) {
         byte[] raw = Base64.getDecoder().decode(base64Secret.trim());
         if (raw.length < 32) {
             throw new IllegalStateException("jwt secret must be at least 32 bytes, got " + raw.length);
