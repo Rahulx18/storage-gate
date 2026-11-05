@@ -14,6 +14,8 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -24,7 +26,10 @@ public class GoogleOAuthClient {
     private static final String SCOPES = "openid email " + DRIVE_SCOPE;
     private static final long STATE_TTL_SECONDS = 600;
 
-    private final Map<String, Instant> states = new ConcurrentHashMap<>();
+    private record PendingState(Instant expires, UUID ownerId) {
+    }
+
+    private final Map<String, PendingState> states = new ConcurrentHashMap<>();
     private final SecureRandom random = new SecureRandom();
 
     private final RestClient restClient = RestClient.create();
@@ -38,11 +43,11 @@ public class GoogleOAuthClient {
     @Value("${google.redirect-uri}")
     private String redirectUri;
 
-    public String buildAuthorizationUrl() {
+    public String buildAuthorizationUrl(UUID ownerId) {
         byte[] bytes = new byte[32];
         random.nextBytes(bytes);
         String state = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        states.put(state, Instant.now().plusSeconds(STATE_TTL_SECONDS));
+        states.put(state, new PendingState(Instant.now().plusSeconds(STATE_TTL_SECONDS), ownerId));
 
         return UriComponentsBuilder.fromUriString("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", clientId)
@@ -56,9 +61,12 @@ public class GoogleOAuthClient {
                 .toUriString();
     }
 
-    public boolean consumeState(String state) {
-        states.values().removeIf(exp -> exp.isBefore(Instant.now()));
-        return state != null && states.remove(state) != null;
+    public Optional<UUID> consumeState(String state) {
+        states.values().removeIf(s -> s.expires().isBefore(Instant.now()));
+        if (state == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(states.remove(state)).map(PendingState::ownerId);
     }
 
     public GoogleTokenResponse exchangeCode(String code) {

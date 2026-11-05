@@ -82,6 +82,7 @@ public class SignupRequestService {
         user.setPasswordHash(request.getPasswordHash());
         user.setPermission(Permission.EDITOR);
         userRepository.save(user);
+        request.setProvisionedAt(Instant.now());
 
         mailService.sendApproved(request.getEmail());
         return SignupRequestResponse.from(request);

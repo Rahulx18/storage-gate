@@ -16,4 +16,6 @@ public interface StorageAccountRepository extends JpaRepository<StorageAccount, 
     boolean existsByDestinationAndEmail(StorageDestination destination, String email);
 
     List<StorageAccount> findAllByStatus(StorageAccountStatus status);
+
+    List<StorageAccount> findAllByOwnerUserId(UUID ownerUserId);
 }

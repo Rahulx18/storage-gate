@@ -7,6 +7,8 @@ import com.personal.storagegate.service.GoogleDriveClient;
 import com.personal.storagegate.service.GoogleOAuthClient;
 import com.personal.storagegate.service.StorageAccountService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,15 +39,14 @@ public class DriveAccountController {
     }
 
     @GetMapping("/drive-accounts/authorize")
-    public Map<String, String> authorize() {
-        return Map.of("url", oAuthClient.buildAuthorizationUrl());
+    public Map<String, String> authorize(@AuthenticationPrincipal Jwt jwt) {
+        return Map.of("url", oAuthClient.buildAuthorizationUrl(UUID.fromString(jwt.getSubject())));
     }
 
     @GetMapping("/drive-accounts/callback")
     public StorageAccount callback(@RequestParam String code, @RequestParam String state) {
-        if (!oAuthClient.consumeState(state)) {
-            throw new IllegalArgumentException("invalid or expired state, restart from /drive-accounts/authorize");
-        }
+        UUID ownerId = oAuthClient.consumeState(state).orElseThrow(() ->
+                new IllegalArgumentException("invalid or expired state, restart from /drive-accounts/authorize"));
         GoogleTokenResponse tokens = oAuthClient.exchangeCode(code);
         if (tokens.scope() == null || !tokens.scope().contains(GoogleOAuthClient.DRIVE_SCOPE)) {
             throw new IllegalStateException("drive.file scope was not granted");
@@ -56,7 +57,7 @@ public class DriveAccountController {
         }
         String email = oAuthClient.fetchEmail(tokens.access_token());
         log.info("Connected Drive account: {}", email);
-        return accountService.saveGoogleDriveAccount(email, tokens.refresh_token());
+        return accountService.saveGoogleDriveAccount(email, tokens.refresh_token(), ownerId);
     }
 
     @GetMapping("/drive-accounts/{id}/about")
