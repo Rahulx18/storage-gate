@@ -6,6 +6,8 @@ import com.personal.storagegate.entity.StorageDestination;
 import com.personal.storagegate.repository.StorageAccountRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class StorageAccountService {
 
@@ -15,7 +17,7 @@ public class StorageAccountService {
         this.repository = repository;
     }
 
-    public StorageAccount saveGoogleDriveAccount(String email, String refreshToken) {
+    public StorageAccount saveGoogleDriveAccount(String email, String refreshToken, UUID ownerId) {
         StorageAccount account = repository
                 .findByDestinationAndEmail(StorageDestination.GOOGLE_DRIVE, email)
                 .orElseGet(StorageAccount::new);
@@ -25,6 +27,9 @@ public class StorageAccountService {
         account.setEmail(email);
         account.setDisplayName(displayName);
         account.setRefreshToken(refreshToken);
+        if (account.getOwnerUserId() == null) {
+            account.setOwnerUserId(ownerId);
+        }
         return repository.save(account);
     }
 }

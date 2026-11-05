@@ -38,6 +38,12 @@ public class SignupRequest {
     @Column(nullable = false, length = 16)
     private SignupStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 32)
+    private Permission permission;
+
+    private Instant provisionedAt;
+
     @Column(length = 45)
     private String requestedIp;
 

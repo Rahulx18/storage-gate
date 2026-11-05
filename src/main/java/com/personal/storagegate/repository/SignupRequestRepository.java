@@ -12,5 +12,7 @@ public interface SignupRequestRepository extends JpaRepository<SignupRequest, UU
 
     Optional<SignupRequest> findByEmail(String email);
 
+    List<SignupRequest> findAllByStatusAndProvisionedAtIsNull(SignupStatus status);
+
     List<SignupRequest> findAllByStatusOrderByCreatedAtAsc(SignupStatus status);
 }

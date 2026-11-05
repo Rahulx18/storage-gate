@@ -38,6 +38,12 @@ public class AppUser {
     @Column(nullable = false, length = 32)
     private Permission permission;
 
+    @Column(nullable = false)
+    private long quotaBytes = 10L * 1024 * 1024 * 1024;
+
+    @Column(nullable = false)
+    private long usedBytes;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

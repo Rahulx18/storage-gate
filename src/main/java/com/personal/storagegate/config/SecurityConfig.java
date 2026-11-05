@@ -1,8 +1,10 @@
 package com.personal.storagegate.config;
 
+import com.personal.storagegate.entity.Permission;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,7 +49,14 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/error", "/drive-accounts/callback",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                                 "/index.html", "/", "/privacy.html", "/tos.html").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole(String.valueOf(Permission.ADMIN))
+                        .requestMatchers("/users/me").authenticated()
+                        .requestMatchers("/users", "/users/**").hasRole(String.valueOf(Permission.ADMIN))
+                        .requestMatchers("/drive-accounts/**").hasAnyRole(String.valueOf(Permission.ADMIN), String.valueOf(Permission.CONTRIBUTOR))
+                        .requestMatchers(HttpMethod.POST, "/files", "/files/**")
+                        .hasAnyRole(String.valueOf(Permission.ADMIN), String.valueOf(Permission.CONTRIBUTOR), String.valueOf(Permission.EDITOR))
+                        .requestMatchers(HttpMethod.DELETE, "/files/**")
+                        .hasAnyRole(String.valueOf(Permission.ADMIN), String.valueOf(Permission.CONTRIBUTOR), String.valueOf(Permission.EDITOR))
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)));
         return http.build();

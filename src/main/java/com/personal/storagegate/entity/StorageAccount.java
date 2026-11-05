@@ -57,6 +57,8 @@ public class StorageAccount {
 
     private Long quotaUsedBytes;
 
+    private UUID ownerUserId;
+
     private Instant lastSyncedAt;
 
     @CreationTimestamp
